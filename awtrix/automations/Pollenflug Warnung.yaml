@@ -1,0 +1,59 @@
+alias: Pollenflug Warnung
+description: ""
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.pollenflug_beifuss_124
+      - sensor.pollenflug_ambrosia_124
+      - sensor.pollenflug_birke_124
+      - sensor.pollenflug_erle_124
+      - sensor.pollenflug_esche_124
+      - sensor.pollenflug_graeser_124
+      - sensor.pollenflug_roggen_124
+      - sensor.pollenflug_hasel_124
+    attribute: state_tomorrow
+conditions:
+  - condition: time
+    after: "06:00:00"
+    before: "21:00:00"
+actions:
+  - data:
+      icon: |-
+        {% set high_risk_pollen = [
+          states('sensor.pollenflug_birke_124') | float(0),
+          states('sensor.pollenflug_erle_124') | float(0),
+          states('sensor.pollenflug_esche_124') | float(0),
+          states('sensor.pollenflug_hasel_124') | float(0)
+        ] %} {% if high_risk_pollen | select('gt', 0) | list | length > 0 %}
+          52669
+        {% else %}
+          52670
+        {% endif %}
+      rainbow: true
+      lifetime: 10
+      duration: 15
+      textcase: 0
+      topicname: Pollenwarnung
+      text: |-
+        {% set pollen_sensors = {
+          "Beifuß": states('sensor.pollenflug_beifuss_124') | float(0),
+          "Ambrosia": states('sensor.pollenflug_ambrosia_124') | float(0),
+          "Birke": states('sensor.pollenflug_birke_124') | float(0),
+          "Erle": states('sensor.pollenflug_erle_124') | float(0),
+          "Esche": states('sensor.pollenflug_esche_124') | float(0),
+          "Gräser": states('sensor.pollenflug_graeser_124') | float(0),
+          "Roggen": states('sensor.pollenflug_roggen_124') | float(0),
+          "Hasel": states('sensor.pollenflug_hasel_124') | float(0)
+        } %}
+        {% set pollen_text = (pollen_sensors.items() 
+           | selectattr('1', 'gt', 0) 
+           | map(attribute=0) 
+           | list) %}
+
+        {% if pollen_text | count > 0 %}
+          Achtung! Starker Pollenflug: {{ pollen_text | join(', ') }}
+        {% else %}
+          Keine starke Pollenbelastung heute.
+        {% endif %}
+    action: script.awtrix_new_notify
+mode: single

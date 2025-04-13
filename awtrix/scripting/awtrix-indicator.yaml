@@ -1,0 +1,47 @@
+alias: awtrix - indicator
+sequence:
+  - action: mqtt.publish
+    metadata: {}
+    data:
+      evaluate_payload: false
+      qos: 0
+      retain: false
+      topic: awtrix_green/indicator{{indicator}}
+      payload: "{\"color\":{{colour}}, \"fade\":{{fade}}}"
+description: ""
+icon: mdi:led-strip
+fields:
+  indicator:
+    selector:
+      number:
+        min: 1
+        max: 3
+        step: 1
+    name: indicator
+    required: true
+    description: Index of the indicator
+    default: 1
+  colour:
+    selector:
+      color_rgb: {}
+    default:
+      - 255
+      - 0
+      - 0
+    name: colour
+    description: Colour of the indicator
+    required: true
+  fade:
+    selector:
+      number:
+        min: 500
+        max: 3000
+        step: 100
+    name: fade
+    required: true
+    default: 0
+    description: >-
+      Fade the indicator on and off with a fade interval in milliseconds - 0 is
+      don't fade
+mode: parallel
+max: 10

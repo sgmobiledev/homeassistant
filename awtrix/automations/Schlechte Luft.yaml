@@ -1,0 +1,47 @@
+alias: Schlechte Luft
+description: ""
+triggers:
+  - entity_id: binary_sensor.lumi_lumi_sensor_motion_bewegung
+    to: "on"
+    trigger: state
+  - entity_id: sensor.meter_65b9_kohlendioxid
+    above: 1500
+    trigger: numeric_state
+conditions:
+  - condition: time
+    after: "06:00:00"
+    before: "21:00:00"
+  - condition: state
+    entity_id: binary_sensor.lumi_lumi_sensor_motion_bewegung
+    state: "on"
+  - condition: numeric_state
+    entity_id: sensor.meter_65b9_kohlendioxid
+    above: 1500
+actions:
+  - data:
+      icon: 35500
+      rainbow: true
+      lifetime: 10
+      duration: 15
+      textcase: 0
+      topicname: CO2_Bad
+      text: >-
+        Es sollte gelüftet werden, beim Wert {{
+        states('sensor.meter_65b9_kohlendioxid') | round(0) }} ppm.
+    action: script.awtrix_new_notify
+  - action: light.toggle
+    metadata: {}
+    data: {}
+    target:
+      device_id:
+        - a9ffe008a3bbea31d27615d25d2a9628
+        - d28d5526e94172e3edd73604a847e579
+  - delay: "00:00:15"
+  - action: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      device_id:
+        - a9ffe008a3bbea31d27615d25d2a9628
+        - d28d5526e94172e3edd73604a847e579
+mode: single

@@ -1,0 +1,41 @@
+alias: UV Index Warnung
+description: ""
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.gw1100a_uv_index
+      - sensor.gw1100a_uv_index_2
+conditions:
+  - condition: time
+    after: "06:00:00"
+    before: "21:00:00"
+actions:
+  - data:
+      icon: 61722
+      rainbow: true
+      lifetime: 10
+      duration: 15
+      textcase: 0
+      topicname: uvindexwarnung
+      text: >-
+        {% set uv_values = [
+          states('sensor.gw1100a_uv_index') | float(0),
+          states('sensor.gw1100a_uv_index_2') | float(0)
+        ] %}
+
+        {% set max_uv = uv_values | max %}
+
+        {% if max_uv >= 11 %}
+          {% set uv_level = "Extrem" %}
+        {% elif max_uv >= 8 %}
+          {% set uv_level = "Sehr hoch" %}
+        {% elif max_uv >= 6 %}
+          {% set uv_level = "Hoch" %}
+        {% elif max_uv >= 3 %}
+          {% set uv_level = "Moderat" %}
+        {% else %}
+          {% set uv_level = "Niedrig" %}
+        {% endif %} Achtung! UV-Index: {{ max_uv | round(1) }} - Stufe: {{
+        uv_level }}
+    action: script.awtrix_new_notify
+mode: single

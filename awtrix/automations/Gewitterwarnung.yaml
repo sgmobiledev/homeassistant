@@ -1,0 +1,39 @@
+alias: Gewitterwarnung
+description: ""
+triggers:
+  - entity_id: sensor.gw1100a_lightning_strike_distance_2
+    above: 0
+    below: 5
+    trigger: numeric_state
+conditions:
+  - condition: and
+    conditions:
+      - condition: time
+        after: "06:00:00"
+        before: "23:00:00"
+      - condition: numeric_state
+        entity_id: sensor.gw1100a_lightning_strikes_2
+        above: 0
+        below: 50
+actions:
+  - data:
+      icon: 2981
+      rainbow: true
+      lifetime: 0
+      duration: 15
+      textcase: 0
+      topicname: lighting_strikes
+      text: >
+        {% set sensor_value = states('sensor.gw1100a_last_lightning_strike_2')
+        %} {% if sensor_value not in ['unknown', 'unavailable', None] %}
+          {% set datetime_value = sensor_value | as_datetime | as_local %}
+          {% if datetime_value %}
+            Gewitter in {{ states('sensor.gw1100a_lightning_strike_distance_2')}} KM  vom {{ datetime_value.strftime('%d.%m.%Y, %H:%M') }}
+          {% else %}
+            Keine gültige Zeit verfügbar
+          {% endif %}
+        {% else %}
+          Keine Daten verfügbar
+        {% endif %}
+    action: script.awtrix_new_notify
+mode: single

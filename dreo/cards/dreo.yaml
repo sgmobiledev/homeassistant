@@ -1,0 +1,225 @@
+type: vertical-stack
+title: Dreo Turmventilator
+cards:
+  - type: picture-elements
+    image: /local/DR-HTF009_10-01009-101_A_7_V1.jpg
+    elements:
+      - type: state-label
+        entity: sensor.turmventilatoren_temperature
+        style:
+          color: white
+          top: 10%
+          left: 90%
+      - type: state-icon
+        entity: sensor.turmventilatoren_temperature
+        style:
+          color: white
+          top: 10%
+          left: 80%
+      - type: state-label
+        entity: fan.turmventilatoren
+        attribute: percentage
+        suffix: " %"
+        style:
+          color: white
+          top: 20%
+          left: 90%
+      - type: state-label
+        entity: sensor.dreofanspeednumber
+        style:
+          color: white
+          top: 40%
+          left: 90%
+      - type: state-icon
+        entity: sensor.dreofanspeednumber
+        style:
+          color: white
+          top: 40%
+          left: 80%
+      - type: state-icon
+        entity: fan.turmventilatoren
+        attribute: percentage
+        suffix: " %"
+        style:
+          color: white
+          top: 20%
+          left: 80%
+      - type: state-label
+        entity: switch.turmventilatoren_panel_sound
+        style:
+          color: white
+          top: 30%
+          left: 90%
+      - type: state-icon
+        entity: switch.turmventilatoren_panel_sound
+        style:
+          color: white
+          top: 30%
+          left: 80%
+  - type: horizontal-stack
+    cards:
+      - type: custom:button-card
+        entity: fan.turmventilatoren
+        styles:
+          name:
+            - font-size: 13px
+        state:
+          - value: "on"
+            styles:
+              icon:
+                - animation:
+                    - rotating 1s linear infinite
+      - type: custom:button-card
+        entity: fan.turmventilatoren
+        icon: mdi:arrow-oscillating
+        name: Oszillieren
+        styles:
+          name:
+            - font-size: 13px
+        state:
+          - operator: template
+            value: >-
+              [[[ return entity.state === 'on' && entity.attributes.oscillating
+              === true; ]]]
+            styles:
+              icon:
+                - animation: rotating 1s linear infinite
+        tap_action:
+          action: call-service
+          service: fan.oscillate
+          target:
+            entity_id: fan.turmventilatoren
+          data:
+            oscillating: >-
+              [[[ return !states['fan.turmventilatoren'].attributes.oscillating;
+              ]]]
+      - type: custom:button-card
+        icon: mdi:fan-auto
+        name: 10 %
+        color: var(--icon_color)
+        styles:
+          name:
+            - font-size: 13px
+        tap_action:
+          action: call-service
+          service: fan.set_percentage
+          target:
+            entity_id: fan.turmventilatoren
+          data:
+            percentage: 10
+      - type: custom:button-card
+        icon: mdi:plus-box
+        name: Geschwindigkeit
+        color: var(--icon_color)
+        styles:
+          name:
+            - font-size: 13px
+          card:
+            - background-color: |
+                [[[ 
+                  let state = states['fan.turmventilatoren'].state;
+                  let percentage = states['fan.turmventilatoren'].attributes.percentage || 0;
+                  if (state === "off") return "white"; // Wenn aus, dann weißer Hintergrund
+                  if (percentage <= 20) return "#99ccff"; // Helles Blau
+                  if (percentage <= 40) return "#66b2ff"; // Mittelhelles Blau
+                  if (percentage <= 60) return "#3399ff"; // Mittelblau
+                  if (percentage <= 80) return "#0077ff"; // Dunkleres Blau
+                  return "#0055cc"; // Sehr dunkles Blau für 100%
+                ]]]
+            - border-radius: 10px
+            - padding: 10px
+            - color: black
+        tap_action:
+          action: call-service
+          service: fan.increase_speed
+          target:
+            entity_id: fan.turmventilatoren
+          data:
+            percentage_step: 5
+      - type: custom:button-card
+        icon: mdi:minus-box-outline
+        name: Geschwindigkeit
+        styles:
+          name:
+            - font-size: 13px
+          card:
+            - background-color: |
+                [[[ 
+                  let state = states['fan.turmventilatoren'].state;
+                  let percentage = states['fan.turmventilatoren'].attributes.percentage || 0;
+                  if (state === "off") return "white"; // Wenn aus, dann weißer Hintergrund
+                  if (percentage <= 20) return "#99ccff"; // Helles Blau
+                  if (percentage <= 40) return "#66b2ff"; // Mittelhelles Blau
+                  if (percentage <= 60) return "#3399ff"; // Mittelblau
+                  if (percentage <= 80) return "#0077ff"; // Dunkleres Blau
+                  return "#0055cc"; // Sehr dunkles Blau für 100%
+                ]]]
+            - border-radius: 10px
+            - padding: 10px
+            - color: black
+        tap_action:
+          action: call-service
+          service: fan.decrease_speed
+          target:
+            entity_id: fan.turmventilatoren
+          data:
+            percentage_step: |
+              [[[ 
+                let current_percentage = states['fan.turmventilatoren'].attributes.percentage_step || 0;
+                // Wenn der aktuelle Wert 0 ist, setze ihn auf 10
+                if (current_percentage === 0) {
+                  return 10;
+                } else {
+                  // Erhöhe den Wert um 20, aber max. 100
+                  let new_percentage = current_percentage + 10;
+                  return new_percentage > 100 ? 100 : new_percentage;
+                }
+              ]]]
+  - type: horizontal-stack
+    cards:
+      - type: custom:mini-graph-card
+        entities:
+          - entity: sensor.turmventilatoren_temperature
+            name: Temperatur
+        line_width: 8
+        font_size: 75
+        color_thresholds:
+          - value: 18
+            color: "#00FFFF"
+          - value: 21
+            color: "#d35400"
+          - value: 40
+            color: "#c0392b"
+      - type: custom:mini-graph-card
+        entities:
+          - entity: sensor.dreofanspeednumber
+            name: Stufe
+            color: green
+          - entity: fan.turmventilatoren
+            attribute: percentage_step
+            name: Ventilationsleistung
+            color: lightblue
+        line_width: 8
+        font_size: 75
+        y_axis: secondary
+        show:
+          name: true
+          legend: true
+          icon: true
+          labels: true
+          labels_secondary: true
+        color_thresholds:
+          - value: 0
+            color: black
+          - value: 1
+            color: "#F0F8FF"
+          - value: 2
+            color: "#00FFFF"
+          - value: 3
+            color: "#6495ED"
+          - value: 4
+            color: "#00bfff"
+          - value: 5
+            color: "#483D8B"
+          - value: 6
+            color: "#4B0082"

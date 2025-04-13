@@ -1,0 +1,87 @@
+alias: awtrix - new notify
+sequence:
+  - action: mqtt.publish
+    metadata: {}
+    data:
+      evaluate_payload: false
+      qos: 0
+      retain: false
+      topic: awtrix_green/notify
+      payload: |-
+        {
+          "text": "{{text}}",
+          "rainbow": {{rainbow|tojson}},
+          "duration": "{{duration}}",
+          "icon": "{{icon}}",
+          "scrollSpeed": 80,
+          "textCase": "{{textcase}}",
+          "lifetime": "{{lifetime}}"
+        }
+description: ""
+icon: mdi:led-strip
+fields:
+  topicname:
+    selector:
+      text: null
+    name: topicname
+    required: true
+    description: Name of the topic - one topic per app
+  text:
+    selector:
+      text: null
+    name: text
+    required: true
+    description: Text to be displayed
+  icon:
+    selector:
+      number:
+        min: 0
+        max: 100000
+    name: icon
+    required: true
+    description: Icon ID, needs to be present on the awtrix filesystem - default no icon
+    default: 1
+  rainbow:
+    selector:
+      boolean: {}
+    name: rainbow
+    default: false
+    required: true
+    description: Rainbow text yes/no
+  lifetime:
+    selector:
+      number:
+        min: 0
+        max: 86400
+        step: 1
+    name: lifetime
+    default: 0
+    description: Discard app after X seconds - default 0 (never expire)
+  duration:
+    selector:
+      number:
+        min: 1
+        max: 180
+        step: 1
+    name: duration
+    default: 3
+    description: How many seconds should the message be displayed - default 3
+  textcase:
+    selector:
+      number:
+        min: 0
+        max: 2
+        step: 1
+    name: textCase
+    default: 0
+    description: >-
+      Changes the Uppercase setting. 0=global setting, 1=forces uppercase;
+      2=shows as it sent - default 0
+  showimmediately:
+    selector:
+      boolean: {}
+    name: showImmediately
+    required: false
+    description: Jumps the queue and displays the message immediately - default false
+mode: parallel
+max: 10

@@ -1,0 +1,51 @@
+alias: Dreo Status
+description: "Benachrichtigung: Dreo Ventilator Status"
+triggers:
+  - entity_id: fan.turmventilatoren
+    above: 0
+    below: 5
+    trigger: numeric_state
+conditions:
+  - condition: time
+    after: "06:00:00"
+    before: "21:00:00"
+actions:
+  - data:
+      icon: >
+        {% set percentage = state_attr('fan.turmventilatoren', 'percentage') or
+        0 %} {% if percentage >= 80 %}
+          36842  # Stärkeres Icon bei hoher Leistung
+        {% elif percentage >= 40 %}
+          36840  # Mittleres Icon
+        {% elif percentage >= 20 %}
+          36838  # Mittleres Icon
+        {% else %}
+          42475  # Standard Icon
+        {% endif %}
+      rainbow: true
+      lifetime: 0
+      duration: 15
+      textcase: 0
+      topicname: fan_status
+      text: >
+        {% set state = states('fan.turmventilatoren') %} {% set percentage =
+        state_attr('fan.turmventilatoren', 'percentage') or 0 %} {% if state not
+        in ['unknown', 'unavailable', None, 'off'] %}
+          {% if percentage > 0 %}
+            {% if percentage >= 80 %}
+              Dreo Ventilator läuft auf hoher Stufe mit {{ percentage }}%
+            {% elif percentage >= 40 %}
+              Dreo Ventilator läuft mit mittlerer Geschwindigkeit bei {{ percentage }}%
+             {% elif percentage >= 20 %}
+              Dreo Ventilator läuft mit etwas mehr Geschwindigkeit bei {{ percentage }}%  
+            {% else %}
+              Dreo Ventilator läuft mit niedriger Geschwindigkeit bei {{ percentage }}%
+            {% endif %}
+          {% else %}
+            Dreo Ventilator ist aus
+          {% endif %}
+        {% else %}
+          Keine Daten vom Dreo Ventilator verfügbar
+        {% endif %}
+    action: script.awtrix_new_notify
+mode: single
